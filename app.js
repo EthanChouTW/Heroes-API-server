@@ -7,6 +7,7 @@ module.exports = function () {
 
   app.set('port', process.env.PORT || 3000);
   app.get('/heroes', routes.heroes);
+  app.get('/heroes/:heroId', routes.heroes);
 
   return app;
 }
