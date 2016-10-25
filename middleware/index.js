@@ -1,4 +1,4 @@
-
+var request = require('request');
 let middlewareObj = {}
 
 middlewareObj.checkAuthenticate = function (req, res, next) {
@@ -6,15 +6,48 @@ middlewareObj.checkAuthenticate = function (req, res, next) {
       name: req.headers.name,
       password: req.headers.password
     }
+    console.log(req.headers);
+
     if (typeof auth.name === 'undefined' && typeof auth.password == 'undefined') {
       req.isAuthenticate = false;
       next();
+    } else {
+      checkAuthenticateFromHahowAPI(auth).then(function(body){
+        console.log(body);
+        req.isAuthenticate = true;
+        next();
+      }).catch((body) => {
+        console.log(body);
+        res.json({status: body});
+      })
     }
 
-    req.isAuthenticate = true;
-    next();
+
+
+
 
 };
+
+
+function checkAuthenticateFromHahowAPI(userData){
+  return new Promise(function(resolve, reject){
+
+  request.post(
+    'https://hahow-recruit.herokuapp.com/auth',
+    { json: userData },
+    function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            console.log(body)
+            resolve(body);
+        } else {
+            console.log(error + response.statusCode + body);
+            reject(body);
+        }
+    }
+  );
+ });
+}
+
 
 
 module.exports = middlewareObj
