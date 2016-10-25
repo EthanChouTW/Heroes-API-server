@@ -5,9 +5,9 @@ module.exports = function(seed){
 
   functions.heroes = function (req, res) {
 
+    console.log(req.isAuthenticate);
     let heroId = req.params["heroId"];
     let result; //can be an array(all heroes list) or dictionary(only one hero)
-
     if (typeof heroId === 'undefined') { //no heroId, show all heroes
           result = seed;
     } else {
