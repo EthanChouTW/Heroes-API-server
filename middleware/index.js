@@ -12,18 +12,17 @@ middlewareObj.checkAuthenticate = function (req, res, next) {
       req.isAuthenticate = false;
       next();
     } else {
+
       checkAuthenticateFromHahowAPI(auth).then(function(body){
-        console.log(body);
+
         req.isAuthenticate = true;
+
         next();
       }).catch((body) => {
-        console.log(body);
+
         res.json({status: body});
       })
     }
-
-
-
 
 
 };
@@ -37,10 +36,10 @@ function checkAuthenticateFromHahowAPI(userData){
     { json: userData },
     function (error, response, body) {
         if (!error && response.statusCode == 200) {
-            console.log(body)
+
             resolve(body);
         } else {
-            console.log(error + response.statusCode + body);
+
             reject(body);
         }
     }
