@@ -1,10 +1,10 @@
-module.exports = function () {
-  var express = require('express');
-  var path = require('path');
-  var seed = require("./seed");
-  var routes = require('./routes');
-  var middleware = require('./middleware');
-  var app = express();
+module.exports = () => {
+  let express = require('express'),
+      path = require('path'),
+      seed = require("./seed"),
+      routes = require('./routes'),
+      middleware = require('./middleware'),
+      app = express();
 
 
   app.set('port', process.env.PORT || 3000);

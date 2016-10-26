@@ -1,6 +1,4 @@
-var request = require('request');
-
-
+let request = require('request');
 
   let functions = {};
 
@@ -10,6 +8,8 @@ var request = require('request');
 
       checkAuthorization(heroesList, req, res);
 
+    }).catch((error) => {
+      res.json(error);
     });
 
 
@@ -19,10 +19,12 @@ var request = require('request');
 
     let heroId = req.params["heroId"];
 
-    getSingleHero(heroId).then(heroesList => {
+    getSingleHero(heroId).then(singleHero => {
 
-      checkAuthorization(heroesList, req, res);
+      checkAuthorization(singleHero, req, res);
 
+    }).catch((error) => {
+      res.json(error);
     });
 
 
@@ -30,26 +32,26 @@ var request = require('request');
 
 module.exports = functions;
 
-   function checkAuthorization(result, req, res){
+   function checkAuthorization(result, req, res) {
     // collect promises
      let promises;
         if (req.isAuthenticate) {
 
           if (typeof req.params["heroId"] === 'undefined') {//list all heroes
             // add profile for every hero with secret data
-             promises = result.map(function(element){
+             promises = result.map((element) => {
 
                     const heroId = element['id'];
-                    console.log("hello");
+
                     return  getHeroesProfile(heroId)
-                                .then(function(profile){
+                                .then((profile) => {
 
                                       element["profile"] = profile;
-                                      console.log(element);
+
                                       return element;
                                 })
-                                .catch(function(errorMessage){
-                                      console.log("error" + errorMessage);
+                                .catch((errorMessage) => {
+
                                       return element;
                                 });
 
@@ -66,19 +68,34 @@ module.exports = functions;
 
           }
 
-             // call the promise there, whether it single or list
+          // call the promise there, whether it single or list
            Promise.all(promises)
            .then(results => {
 
               res.json(result);
           })
-           .catch(err => {// if error, send public data for user
+           .catch(err => {            // if error, send public data for user
 
             res.json(result);
           });
 
-       } else {// is not authenticate
-          res.json(result);
+       } else {                       // is not authenticate
+
+          if (!req.authErrorMessage) {// without Name and Password
+            res.json(result);
+          } else {                    // invalid Name and Password
+
+            if (!req.params["heroId"]) {// heroes list, typeof result is array
+              result.map(element => {
+                element['profile'] = req.authErrorMessage;
+                return element;
+              })
+            } else {                  // single hero typeof result is dictionary
+              result['profile'] = req.authErrorMessage;
+            }
+            res.json(result);
+          }
+
        }
 
 
@@ -86,16 +103,16 @@ module.exports = functions;
 
    function getHeroesProfile(heroId) {
     return new Promise((resolve, reject) => {
-      console.log(heroId);
+
       request.get(
         `http://hahow-recruit.herokuapp.com/heroes/${heroId}/profile`,{},
-        function (error, response, body) {
+        (error, response, body) => {
           if (!error && response.statusCode == 200) {
-            console.log("dddd");
+
             resolve(JSON.parse(body));
           } else {
 
-            reject(error);
+            reject(body);
           }
         }
       );
@@ -107,13 +124,13 @@ module.exports = functions;
 
       request.get(
         `http://hahow-recruit.herokuapp.com/heroes`,{},
-        function (error, response, body) {
+        (error, response, body) => {
           if (!error && response.statusCode == 200) {
 
             resolve(JSON.parse(body));
           } else {
 
-            reject(error);
+            reject(body);
           }
         }
         );
@@ -125,13 +142,13 @@ module.exports = functions;
 
       request.get(
         `http://hahow-recruit.herokuapp.com/heroes/${heroId}`,{},
-        function (error, response, body) {
+        (error, response, body) => {
           if (!error && response.statusCode == 200) {
 
             resolve(JSON.parse(body));
           } else {
 
-            reject(error);
+            reject(body);
           }
         }
         );
