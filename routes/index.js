@@ -1,90 +1,137 @@
 var request = require('request');
 
-module.exports = function(seed){
+
 
   let functions = {};
 
-  functions.heroes = function (req, res) {
+  functions.heroesList = (req, res) => {
 
-    console.log(req.isAuthenticate);
+    getHeroeslist().then(heroesList => {
+
+      checkAuthorization(heroesList, req, res);
+
+    });
+
+
+  };
+
+  functions.singleHero = (req, res) => {
+
     let heroId = req.params["heroId"];
-    let result; //can be an array(all heroes list) or dictionary(only one hero)
 
-    if (typeof heroId === 'undefined') { //no heroId, show all heroes
-      result = seed;
-    } else {
-          result = seed.filter((element) =>{ // get hero with da heroId
-            return element["id"] == heroId
-          });
-        };
+    getSingleHero(heroId).then(heroesList => {
 
-        let promises = []
+      checkAuthorization(heroesList, req, res);
+
+    });
+
+
+  };
+
+module.exports = functions;
+
+   function checkAuthorization(result, req, res){
+    // collect promises
+     let promises;
         if (req.isAuthenticate) {
 
+          if (typeof req.params["heroId"] === 'undefined') {//list all heroes
+            // add profile for every hero with secret data
+             promises = result.map(function(element){
 
-         promises = result.map(function(element){
+                    const heroId = element['id'];
+                    console.log("hello");
+                    return  getHeroesProfile(heroId)
+                                .then(function(profile){
 
-                const heroId = element['id'];
+                                      element["profile"] = profile;
+                                      console.log(element);
+                                      return element;
+                                })
+                                .catch(function(errorMessage){
+                                      console.log("error" + errorMessage);
+                                      return element;
+                                });
 
-                return  getHeroesProfile(heroId)
-                            .then(function(profile){
+            });
 
-                                  element["profile"] = JSON.parse(profile);
-                                  console.log(element);
-                                  return element;
-                            })
-                            .catch(function(errorMessage){
-                                  console.log("error" + errorMessage);
-                                  return element;
-                            });
+          } else {// single heroes
+            promises = [getHeroesProfile(req.params["heroId"]).then((profile) => {
+              result["profile"] = profile
 
-        });
+              return result;
+            }).catch((error) => {
+              return result;
+            })];
+
+          }
+
+             // call the promise there, whether it single or list
+           Promise.all(promises)
+           .then(results => {
+
+              res.json(result);
+          })
+           .catch(err => {// if error, send public data for user
+
+            res.json(result);
+          });
+
+       } else {// is not authenticate
+          res.json(result);
        }
 
-       Promise.all(promises)
-       .then(results => {
-          res.json(result);
-      })
-       .catch(e => {
 
-        res.json({status: e});
-      })
-
-     };
-
-     return functions
-   };
+   }
 
    function getHeroesProfile(heroId) {
-    return new Promise(function(resolve, reject){
-
+    return new Promise((resolve, reject) => {
+      console.log(heroId);
       request.get(
         `http://hahow-recruit.herokuapp.com/heroes/${heroId}/profile`,{},
         function (error, response, body) {
           if (!error && response.statusCode == 200) {
-
-            resolve(body);
+            console.log("dddd");
+            resolve(JSON.parse(body));
           } else {
 
-            reject(body);
+            reject(error);
+          }
+        }
+      );
+    });
+  }
+
+  function getHeroeslist() {
+    return new Promise((resolve, reject) => {
+
+      request.get(
+        `http://hahow-recruit.herokuapp.com/heroes`,{},
+        function (error, response, body) {
+          if (!error && response.statusCode == 200) {
+
+            resolve(JSON.parse(body));
+          } else {
+
+            reject(error);
           }
         }
         );
     });
-  }
+  };
 
-  function getHeroeslist(heroId) {
-    return new Promise(function(resolve, reject){
+  function getSingleHero(heroId) {
+    return new Promise((resolve, reject) => {
 
       request.get(
-        `http://hahow-recruit.herokuapp.com/heroes/${heroId}/profile`,{},
+        `http://hahow-recruit.herokuapp.com/heroes/${heroId}`,{},
         function (error, response, body) {
           if (!error && response.statusCode == 200) {
 
-            resolve(body);
+            resolve(JSON.parse(body));
           } else {
 
-            reject(body);
+            reject(error);
           }
         }
         );
