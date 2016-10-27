@@ -4,13 +4,13 @@
 [![npm](https://img.shields.io/npm/v/npm.svg?style=plastic)]()
 [![AppVeyor](https://img.shields.io/appveyor/ci/gruntjs/grunt.svg?style=plastic)]()
 [![Codecov](https://img.shields.io/codecov/c/github/codecov/example-python.svg?style=plastic)]()
-## how to run this project
+## How to run this project
 ```
 npm install
 npm start
 ```
 
-## file structure
+## File Structure
 ```
     -middleware/
     ----------- index.js  // use for authentication
