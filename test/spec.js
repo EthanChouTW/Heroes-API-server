@@ -138,7 +138,6 @@ let should = require('should'),
       .end(function(err, res){
 
         systemError(err,res, done);
-        console.log(res.body);
         res.body.should.be.equal('Not Found');
         done();
       });
