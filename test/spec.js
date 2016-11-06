@@ -1,13 +1,10 @@
-let app = require('../app')();
-
-let should = require('should'),
-    supertest = require('supertest');
+const app = require('../app')();
+const should = require('should');
+const supertest = require('supertest');
 
 
   describe('enen how are you ', function () {
-
     it('enen Im fine thank you and you?', (done) => {
-
     done();
     });
   });
@@ -15,12 +12,12 @@ let should = require('should'),
   describe('heroList API,', () => {
     it('should get hero list with public data', (done) => {
       supertest(app)
-      .get('/heroes').end(function(err, res){
-        systemError(err,res, done);
+      .get('/heroes').end((err, res) => {
+        systemError(err, res, done);
         const result = res.body;
         res.body.forEach((element, index) => {
-          passingCase(element, false, index + 1)
-        })
+          passingCase(element, false, index + 1);
+        });
 
         done();
       });
@@ -48,14 +45,8 @@ let should = require('should'),
       .get('/heroes')
       .set('Name', 'hahow')
       .set('Password', 'rockss')
-      .end(function(err, res){
-
-        systemError(err,res, done);
-        res.body.forEach((element) => {
-          element.profile.should.be.equal('Unauthorized');
-        })
-
-
+      .end(function(err, res) {
+        res.statusCode.should.be.equal(401);
         done();
       });
     });
@@ -65,13 +56,9 @@ let should = require('should'),
       .get('/heroes')
       .set('Name', 'hahow')
       .set('hello', 'hii')
-      .end(function(err, res){
+      .end((err, res) => {
 
-        systemError(err,res, done);
-        res.body.forEach((element) => {
-          element.profile.should.be.equal('Bad Request');
-        })
-
+        res.statusCode.should.be.equal(400);
         done();
       });
     });
@@ -81,7 +68,7 @@ let should = require('should'),
   describe('singleHero API,', () => {
     it('should get hero with public data', (done) => {
       supertest(app)
-      .get('/heroes/1').end(function(err, res){
+      .get('/heroes/1').end((err, res) => {
         systemError(err,res, done);
         const result = res.body;
         passingCase(result, false, 1);
@@ -96,7 +83,6 @@ let should = require('should'),
       .set('Name', 'hahow')
       .set('Password', 'rocks')
       .end(function(err, res){
-        systemError(err,res, done);
         const result = res.body;
         passingCase(result, true, 1);
 
@@ -111,8 +97,7 @@ let should = require('should'),
       .set('Password', 'rockss')
       .end(function(err, res){
 
-        systemError(err,res, done);
-        res.body.profile.should.be.equal('Unauthorized');
+        res.statusCode.should.be.equal(401);
         done();
       });
     });
@@ -124,8 +109,7 @@ let should = require('should'),
       .set('hello', 'hii')
       .end(function(err, res){
 
-        systemError(err,res, done);
-        res.body.profile.should.be.equal('Bad Request');
+        res.statusCode.should.be.equal(400);
         done();
       });
     });
@@ -137,8 +121,7 @@ let should = require('should'),
       .set('hello', 'hii')
       .end(function(err, res){
 
-        systemError(err,res, done);
-        res.body.should.be.equal('Not Found');
+        res.statusCode.should.be.equal(404);
         done();
       });
     });

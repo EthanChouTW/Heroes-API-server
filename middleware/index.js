@@ -1,52 +1,27 @@
-let request = require('request');
-let middlewareObj = {}
+const networking = require('../Networking');
+
+const middlewareObj = {};
 
 middlewareObj.checkAuthenticate = (req, res, next) => {
-  let auth = {
+  const auth = {
     name: req.headers.name,
-    password: req.headers.password
-  }
+    password: req.headers.password,
+  };
 
-  if (typeof auth.name === 'undefined' && typeof auth.password == 'undefined') {
-    req.isAuthenticate = false;
+  if (typeof auth.name === 'undefined' && typeof auth.password === 'undefined') { // no passing header
+    req.statusCode = 200;
     next();
-  } else {
-
-    checkAuthenticateFromHahowAPI(auth).then((body) => {
-
-      req.isAuthenticate = true;
-
-      next();
-    }).catch((body) => { // show error message for auth failure users
-      req.isAuthenticate = false;
-      req.authErrorMessage = body;
-      next()
-    })
+  } else { // with header
+    networking.checkAuthenticateFromHahowAPI(auth)
+      .then(() => {
+        req.isAuthenticatePass = true;
+        next();
+      }).catch((statusCode) => { // show error message for auth failure users
+        req.isAuthenticatePass = false;
+        req.statusCode = statusCode;
+        next();
+      });
   }
-
-
 };
 
-
-function checkAuthenticateFromHahowAPI(userData) {
-  return new Promise((resolve, reject) => {
-
-    request.post(
-      'https://hahow-recruit.herokuapp.com/auth', { json: userData },
-      (error, response, body) => {
-        if (!error && response.statusCode == 200) {
-          console.log(body);
-          resolve(body);
-        } else {
-          console.log(userData);
-          console.log(body);
-          reject(body);
-        }
-      }
-    );
-  });
-}
-
-
-
-module.exports = middlewareObj
+module.exports = middlewareObj;
